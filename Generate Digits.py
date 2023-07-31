@@ -4,7 +4,7 @@ import string
 import time
 
 def generate_random_string(length):
-    characters = string.ascii_uppercase + string.digits
+    characters = string.ascii_letters + string.digits
     return ''.join(random.choice(characters) for _ in range(length))
 
 def create_directory_if_not_exists(directory):
