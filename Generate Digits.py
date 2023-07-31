@@ -2,6 +2,7 @@ import os
 import random
 import string
 import time
+import concurrent.futures
 import threading
 
 def generate_random_string_v2(length):
@@ -33,6 +34,9 @@ def check_existing_code(size, code, destination_path):
 
     return False
 
+# Cria um semáforo para controlar o acesso ao recurso compartilhado (arquivos)
+file_semaphore = threading.Semaphore()
+
 def save_to_file(size, code, destination_path):
     directory_name = f"{size}strings"
     create_directory_if_not_exists(os.path.join(destination_path, directory_name))
@@ -40,11 +44,12 @@ def save_to_file(size, code, destination_path):
     filename = os.path.join(destination_path, directory_name, f"{size}strings.txt")
 
     if not check_existing_code(size, code, destination_path):
-        with open(filename, 'a') as file:
-            file.write(code + "\n")
+        with file_semaphore:
+            with open(filename, 'a') as file:
+                file.write(code + "\n")
 
-        print(f"generate {size} strings: {code}")
-        print(f"File saved in {filename}")
+            print(f"generate {size} strings: {code}")
+            print(f"File saved in {filename}")
     else:
         print(f"Code {code} already exists. Generating a new one.")
 
@@ -61,14 +66,9 @@ def main():
 
     sizes = [4, 6, 8, 16]
 
-    threads = []
-    for _ in range(num_threads):
-        thread = threading.Thread(target=generate_and_save, args=(sizes, destination_path))
-        threads.append(thread)
-        thread.start()
-
-    for thread in threads:
-        thread.join()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+        futures = {executor.submit(generate_and_save, sizes, destination_path) for _ in range(num_threads)}
+        concurrent.futures.wait(futures)
 
 if __name__ == "__main__":
     main()
