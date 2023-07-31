@@ -1,4 +1,5 @@
 Portugues Brasileiro:
+
 Objetivo:
 A script em Python tem o objetivo de gerar códigos aleatórios com letras maiúsculas, minúsculas e dígitos, nos tamanhos de 4, 6, 8 e 16 dígitos. Esses códigos são salvos em arquivos de texto dentro de uma estrutura de pastas organizadas por tamanho e com base no horário de geração. A script continua a ser executada em um loop infinito, salvando os códigos no diretório "/home/kali/Desktop/Generated-Digits/".
 
