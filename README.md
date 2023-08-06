@@ -1,5 +1,3 @@
-Sure! Here's a detailed description of the code:
-
 The code is a Python script that generates random strings, passwords, or real words and saves them in separate files based on their length. It utilizes threads to parallelize the generation process, making it faster and more efficient.
 
 1. Imports:
