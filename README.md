@@ -1,53 +1,40 @@
-Portugues Brasileiro:
+Sure! Here's a detailed description of the code:
 
-Objetivo:
-A script em Python tem o objetivo de gerar códigos aleatórios com letras maiúsculas, minúsculas e dígitos, nos tamanhos de 4, 6, 8 e 16 dígitos. Esses códigos são salvos em arquivos de texto dentro de uma estrutura de pastas organizadas por tamanho e com base no horário de geração. A script continua a ser executada em um loop infinito, salvando os códigos no diretório "/home/kali/Desktop/Generated-Digits/".
+The code is a Python script that generates random strings, passwords, or real words and saves them in separate files based on their length. It utilizes threads to parallelize the generation process, making it faster and more efficient.
 
-Funcionalidades Principais:
+1. Imports:
+   - The script imports necessary libraries, including `os`, `random`, `string`, `time`, `concurrent.futures`, `threading`, `pathlib`, and `requests`.
 
-    Geração de Códigos Aleatórios: A função generate_random_string(length) foi atualizada para incluir letras maiúsculas, minúsculas e dígitos na sequência aleatória gerada.
+2. Constants and API URL:
+   - The script defines constant values for the types of generation (random digits, passwords, words, or all).
+   - An API URL (`RANDOM_WORD_API_URL`) is used to fetch a random real word when generating passwords with real words.
 
-    Criação de Diretórios: A função create_directory_if_not_exists(directory) cria a estrutura de pastas necessária para armazenar os códigos gerados, caso não exista.
+3. Internet Connection Check:
+   - The function `has_internet_connection()` checks if the script has an internet connection by making a request to Google and catching a connection error.
 
-    Salvamento dos Códigos: A função save_to_file(size, code, destination_path) salva os códigos gerados em arquivos de texto dentro de pastas organizadas. Os arquivos são nomeados de acordo com o tamanho dos códigos gerados.
+4. Generation Functions:
+   - `generate_random_string_v2(length)`: Generates a random string with the given length, composed of letters (uppercase/lowercase) and digits.
+   - `generate_random_password(length)`: Generates a random password with the given length, composed of letters, digits, and punctuation.
+   - `generate_real_word_password()`: Generates a random password using a real word from an API if there's an internet connection; otherwise, it generates a random password.
+   
+5. Directory Handling Functions:
+   - `create_directory_if_not_exists(directory)`: Creates a directory if it doesn't exist.
 
-    Loop Infinito: O programa entra em um loop infinito na função main(), onde a cada iteração do loop, é gerado um novo código e salvo nos arquivos correspondentes.
+6. Code Existence Check:
+   - `check_existing_code(size, code, destination_path)`: Checks if a generated code of a specific size already exists in the destination file.
 
-Caminho de Saída:
-O caminho de saída padrão é "/home/kali/Desktop/Generated-Digits/". A pasta "Generated-Digits" é criada no diretório "/home/kali/Desktop/" para armazenar os códigos gerados em subpastas organizadas por tamanhos (4, 6, 8 e 16 dígitos).
+7. Thread-Safe File Saving:
+   - `file_semaphore`: A semaphore to control access to the shared file resource.
+   - `save_to_file(size, code, destination_path)`: Saves a generated code to a file, ensuring it doesn't already exist.
 
-Execução Infinita:
-A script irá executar infinitamente, gerando códigos aleatórios em intervalos de 1 segundo. Os códigos serão salvos em pastas separadas de acordo com seus tamanhos.
+8. Generate and Save Function:
+   - `generate_and_save(size, destination_path, generation_type, should_save=True)`: Generates a code based on the specified type and saves it if required. It also checks if the code already exists before saving it.
 
-Diversidade dos Códigos:
-Os códigos gerados são totalmente aleatórios e incluem letras maiúsculas, minúsculas e dígitos, proporcionando diversidade e complexidade.
+9. Main Function:
+   - `main()`: The main function that manages the user input for the number of threads and the generation type. It then creates a destination directory and starts the thread pool to handle the code generation.
 
-Observação:
-Certifique-se de que o diretório "/home/kali/Desktop/Generated-Digits/" exista e tenha permissões de escrita para que o script possa salvar os arquivos corretamente nesse local. A finalidade da script é apenas demonstrar a geração aleatória e o salvamento em arquivos de texto organizados em pastas.
+10. User Interaction:
+    - The script prompts the user to enter the number of threads and the type of generation (digits, passwords, words, or all).
+    - It continues generating codes in a loop and displays messages for each generated code and saved file. The generation process is controlled by threads, allowing for concurrent generation.
 
-
-English:
-
-Objective:
-The Python script aims to generate random codes consisting of uppercase letters, lowercase letters, and digits with lengths of 4, 6, 8, and 16 characters. These codes are saved in text files within a folder structure organized by size and based on the generation time. The script continues to run in an infinite loop, saving the codes in the directory "/home/kali/Desktop/Generated-Digits/".
-
-Key Features:
-Random Code Generation: The function generate_random_string(length) has been updated to include uppercase letters, lowercase letters, and digits in the generated random sequence.
-
-Directory Creation: The function create_directory_if_not_exists(directory) creates the necessary folder structure to store the generated codes if it does not already exist.
-
-Code Saving: The function save_to_file(size, code, destination_path) saves the generated codes in text files within organized folders. The files are named according to the size of the generated codes.
-
-Infinite Loop: The program enters an infinite loop in the function main(), where in each iteration of the loop, a new code is generated and saved in the corresponding files.
-
-Output Path:
-The default output path is "/home/kali/Desktop/Generated-Digits/". The folder "Generated-Digits" is created in the directory "/home/kali/Desktop/" to store the generated codes in subfolders organized by sizes (4, 6, 8, and 16 digits).
-
-Infinite Execution:
-The script will execute indefinitely, generating random codes at intervals of 1 second. The codes will be saved in separate folders according to their sizes.
-
-Diversity of Codes:
-The generated codes are completely random and include uppercase letters, lowercase letters, and digits, providing diversity and complexity.
-
-Note:
-Make sure that the directory "/home/kali/Desktop/Generated-Digits/" exists and has write permissions so that the script can save the files correctly in that location. The purpose of the script is only to demonstrate random generation and saving to text files organized in folders.
+The code is designed to be flexible and scalable, allowing easy addition of new generation types or modifications to existing ones. The use of threads enhances performance, making it suitable for generating a large number of codes simultaneously.
