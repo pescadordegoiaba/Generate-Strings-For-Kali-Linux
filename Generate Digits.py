@@ -1,9 +1,6 @@
-#!/usr/bin/env python3
-
 import os
 import random
 import string
-import time
 import concurrent.futures
 import threading
 from pathlib import Path
@@ -45,18 +42,25 @@ def generate_random_password(length):
     characters = string.ascii_letters + string.digits + string.punctuation
     return ''.join(random.choice(characters) for _ in range(length))
 
-def generate_real_word_password():
-    try:
-        response = requests.get(RANDOM_WORD_API_URL)
-        if response.status_code == 200:
-            data = response.json()
-            word = data[0]
-            return word
-    except requests.RequestException:
-        pass
+def generate_real_word_password(destination_path, length):
+    if has_internet_connection():
+        try:
+            response = requests.get(RANDOM_WORD_API_URL)
+            if response.status_code == 200:
+                data = response.json()
+                words = [word for word in data if len(word) == length]
+                if words:
+                    word = words[0]
+                    save_to_file(length, word, destination_path)
+                    return word
+            else:
+                print(f"Failed to get a valid real word with {length} characters. Using random characters instead.")
+        except requests.RequestException:
+            pass
+    else:
+        print("No internet connection. Using random characters to generate password.")
 
-    print(f"Failed to get a real word. Using random characters instead.")
-    return generate_random_string_v2(10)
+    return generate_random_password(length)
 
 def create_directory_if_not_exists(directory):
     if not os.path.exists(directory):
@@ -73,23 +77,6 @@ def check_existing_code(size, code, destination_path):
                     return True
 
     return False
-
-def check_existing_codes_in_thread(destination_path, generation_type, num_codes_to_check):
-    sizes = [4, 6, 8, 16]
-    codes_to_check = []
-    while num_codes_to_check > 0:
-        size = random.choice(sizes)
-        code = generate_and_save(size, destination_path, generation_type, False)
-        if code not in codes_to_check:
-            codes_to_check.append(code)
-            num_codes_to_check -= 1
-
-    existing_codes = []
-    for code in codes_to_check:
-        if check_existing_code(len(code), code, destination_path):
-            existing_codes.append(code)
-
-    print(f"Existing codes of size {sizes}: {existing_codes}")
 
 def save_to_file(size, code, destination_path):
     directory_name = f"{size}strings"
@@ -111,35 +98,47 @@ def generate_and_save(size, destination_path, generation_type, should_save=True)
     if generation_type == GENERATE_RANDOM_DIGITS:
         code = generate_random_string_v2(size)
     elif generation_type == GENERATE_RANDOM_PASSWORDS:
-        if has_internet_connection():
-            code = generate_real_word_password()
-        else:
-            code = generate_random_password(size)
+        code = generate_real_word_password(destination_path, size)
     elif generation_type == GENERATE_RANDOM_WORDS:
-        code = generate_real_word_password()
+        code = generate_real_word_password(destination_path, size)
     else:
         raise ValueError("Invalid generation type.")
 
     if check_existing_code(size, code, destination_path):
         print(f"Code {code} already exists.")
-        return
+        return generate_and_save(size, destination_path, generation_type)  # Regenerates a new code
 
     if should_save:
         save_to_file(size, code, destination_path)
 
     return code
 
+def generate_with_threads(num_threads, destination_path, generation_types, sizes):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+        futures = []
+        for size in sizes:
+            for gen_type in generation_types:
+                futures.append(executor.submit(generate_and_save, size, destination_path, gen_type))
+
+        concurrent.futures.wait(futures)
+
 def main():
     destination_path = Path("/home/kali/Desktop/Generated-Digits/")
     destination_path.mkdir(parents=True, exist_ok=True)
+
+    num_threads_available = os.cpu_count() * 2  # Obtem o número de threads disponíveis
+
+    print(f"Number of available threads: {num_threads_available}")
 
     while True:
         try:
             num_threads = int(input("Enter the number of threads: "))
             if num_threads <= 0:
                 raise ValueError("Number of threads must be a positive integer.")
-        except ValueError:
-            print("Invalid input. Number of threads must be a positive integer.")
+            if num_threads > num_threads_available:
+                raise ValueError(f"Number of threads cannot exceed the available threads ({num_threads_available}).")
+        except ValueError as e:
+            print(e)
         else:
             break
 
@@ -167,17 +166,7 @@ def main():
     sizes = [4, 6, 8, 16]
 
     while True:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
-            futures = []
-            for size in sizes:
-                for gen_type in generation_types:
-                    futures.append(executor.submit(generate_and_save, size, destination_path, gen_type))
-            futures.append(executor.submit(check_existing_codes_in_thread, destination_path, generation_type, num_threads // 5))
-
-            concurrent.futures.wait(futures)
-
-        print("Waiting for the next round of generation...")
-        time.sleep(0)
+        generate_with_threads(num_threads, destination_path, generation_types, sizes)
 
 if __name__ == "__main__":
     main()
